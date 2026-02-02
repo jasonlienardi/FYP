@@ -20,7 +20,7 @@ from less.data_selection.get_validation_dataset import (get_dataloader,
 
 
 def load_model(model_name_or_path: str,
-               torch_dtype: Any = torch.bfloat16) -> Any:
+               dtype: Any = torch.bfloat16) -> Any:
     """
     Load a model from a given model name or path.
 
@@ -37,13 +37,16 @@ def load_model(model_name_or_path: str,
     if is_peft:
         # load this way to make sure that optimizer states match the model structure
         config = LoraConfig.from_pretrained(model_name_or_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         base_model = AutoModelForCausalLM.from_pretrained(
-            config.base_model_name_or_path, torch_dtype=torch_dtype, device_map="auto")
+            config.base_model_name_or_path, dtype=dtype, device_map="auto")
+        if base_model.get_input_embeddings().weight.shape[0] != len(tokenizer):
+            base_model.resize_token_embeddings(len(tokenizer))
         model = PeftModel.from_pretrained(
             base_model, model_name_or_path, device_map="auto")
     else:
         model = AutoModelForCausalLM.from_pretrained(
-            model_name_or_path, torch_dtype=torch_dtype, device_map="auto")
+            model_name_or_path, dtype=dtype, device_map="auto")
 
     for name, param in model.named_parameters():
         if 'lora' in name or 'Lora' in name:
@@ -125,7 +128,7 @@ if isinstance(model, PeftModel):
 
 adam_optimizer_state = None
 if args.info_type == "grads" and args.gradient_type == "adam":
-    optimizer_path = os.path.join(args.model_path, "optimizer.bin")
+    optimizer_path = os.path.join(args.model_path, "optimizer.pt")
     adam_optimizer_state = torch.load(
         optimizer_path, map_location="cpu")["state"]
 

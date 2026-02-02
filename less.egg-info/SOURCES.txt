@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+less.egg-info/PKG-INFO
+less.egg-info/SOURCES.txt
+less.egg-info/dependency_links.txt
+less.egg-info/requires.txt
+less.egg-info/top_level.txt

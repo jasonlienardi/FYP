@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: less
+Version: 0.1
+Summary: LESS
+Home-page: https://github.com/princeton-nlp/LESS
+Author: Mengzhou Xia
+Classifier: Programming Language :: Python :: 3
+License-File: LICENSE
+Requires-Dist: peft==0.7.1
+Requires-Dist: transformers==4.36.2
+Requires-Dist: traker[fast]==0.1.3
+Dynamic: author
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: summary

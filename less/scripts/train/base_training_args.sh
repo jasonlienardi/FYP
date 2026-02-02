@@ -1,8 +1,12 @@
 #!/bin/bash
 
 ID=$RANDOM
-export header="torchrun --nproc_per_node 1 --nnodes 1 \
---rdzv-id=$ID --rdzv_backend c10d \
+# Force the training to see ONLY GPU 1 to prevent any confusion
+export header="CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 torchrun \
+--nproc_per_node 1 \
+--nnodes 1 \
+--rdzv-id=$ID \
+--rdzv_backend c10d \
 -m less.train.train"
 
 export base_training_args="--do_train True \
@@ -11,15 +15,17 @@ export base_training_args="--do_train True \
 --lr_scheduler_type linear \
 --warmup_ratio 0.03 \
 --weight_decay 0.0 \
---evaluation_strategy no \
+--eval_strategy no \
 --logging_steps 1 \
---save_strategy no \
+--save_strategy epoch \
 --num_train_epochs 4 \
 --bf16 True \
+--torch_dtype bfloat16 \
+--gradient_checkpointing True \
 --tf32 False \
 --fp16 False \
 --overwrite_output_dir True \
---report_to wandb \
+--report_to none \
 --optim adamw_torch \
 --seed 0 \
 --percentage 1.0 \

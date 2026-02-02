@@ -128,13 +128,43 @@ def obtain_gradients_with_adam(model, batch, avg, avg_sq):
 
 
 def prepare_optimizer_state(model, optimizer_state, device):
+    if "state" in optimizer_state:
+        optimizer_state = optimizer_state["state"]
+
+    # Get the names of parameters that actually have gradients (LoRA params)
     names = [n for n, p in model.named_parameters() if p.requires_grad]
-    avg = torch.cat([optimizer_state[n]["exp_avg"].view(-1) for n in names])
-    avg_sq = torch.cat([optimizer_state[n]["exp_avg_sq"].view(-1)
-                       for n in names])
-    avg = avg.to(device)
-    avg_sq = avg_sq.to(device)
-    return avg, avg_sq
+
+    exp_avgs = []
+    exp_avg_sqs = []
+
+    # Check if the optimizer uses integer keys
+    is_integer_indexed = all(isinstance(k, int) for k in list(optimizer_state.keys())[:5])
+
+    if is_integer_indexed:
+        print("Detected integer-indexed optimizer state. Mapping by order...")
+        # In integer-indexed states, the keys 0, 1, 2... correspond 
+        # to the order of model.parameters()
+        for i, (n, p) in enumerate(model.named_parameters()):
+            if p.requires_grad:
+                if i in optimizer_state:
+                    exp_avgs.append(optimizer_state[i]["exp_avg"].view(-1))
+                    exp_avg_sqs.append(optimizer_state[i]["exp_avg_sq"].view(-1))
+    else:
+        # Standard name-based lookup
+        for n in names:
+            target_key = n
+            if target_key not in optimizer_state:
+                target_key = n.replace("base_model.model.", "")
+            if target_key in optimizer_state:
+                exp_avgs.append(optimizer_state[target_key]["exp_avg"].view(-1))
+                exp_avg_sqs.append(optimizer_state[target_key]["exp_avg_sq"].view(-1))
+            else:
+                raise KeyError(f"Could not find {n} in optimizer state")
+
+    # Ensure the list of tensors are all moved to the correct device before concatenation
+    avg = torch.cat([x.to(device) for x in exp_avgs])
+    var = torch.cat([x.to(device) for x in exp_avg_sqs])
+    return avg, var
 
 
 def collect_grads(dataloader,
@@ -210,8 +240,7 @@ def collect_grads(dataloader,
                          proj_type=ProjectionType.rademacher,
                          device=device,
                          dtype=dtype,
-                         block_size=block_size,
-                         max_batch_size=projector_batch_size)
+                         block_size=block_size)
         projectors.append(proj)
 
     count = 0

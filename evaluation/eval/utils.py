@@ -207,6 +207,24 @@ def load_hf_lm_and_tokenizer(
         peft_dir = model_name_or_path
         model_name_or_path = peft_config.base_model_name_or_path
         
+    if not tokenizer_name_or_path:
+        if is_peft:
+            tokenizer_name_or_path = peft_dir
+        else:
+            tokenizer_name_or_path = model_name_or_path
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, use_fast=use_fast_tokenizer)
+    except:
+        # some tokenizers (e.g., GPTNeoXTokenizer) don't have the slow or fast version, so we just roll back to the default one
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
+
+    # set padding side to left for batch generation
+    tokenizer.padding_side = padding_side
+    # set pad token to eos token if pad token is not set (as is the case for llama models)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
     if gptq_model:
         from auto_gptq import AutoGPTQForCausalLM
         model_wrapper = AutoGPTQForCausalLM.from_quantized(
@@ -228,6 +246,7 @@ def load_hf_lm_and_tokenizer(
                 model = model.cuda()
         
         if is_peft:
+            model.resize_token_embeddings(len(tokenizer))
             model = PeftModel.from_pretrained(model, peft_dir, device_map="auto").merge_and_unload()
             print(f"loaded the peft model") 
          
@@ -244,24 +263,6 @@ def load_hf_lm_and_tokenizer(
             assert next(model.parameters()).dtype == torch.float32, "model parameters should be in float32 precision"
 
     model.eval()
-
-    if not tokenizer_name_or_path:
-        if is_peft:
-            tokenizer_name_or_path = peft_dir
-        else:
-            tokenizer_name_or_path = model_name_or_path
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, use_fast=use_fast_tokenizer)
-    except:
-        # some tokenizers (e.g., GPTNeoXTokenizer) don't have the slow or fast version, so we just roll back to the default one
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
-
-    # set padding side to left for batch generation
-    tokenizer.padding_side = padding_side
-    # set pad token to eos token if pad token is not set (as is the case for llama models)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
 
     # replace with new embeddings 
     if len(tokenizer) > model.get_input_embeddings().weight.shape[0]:
