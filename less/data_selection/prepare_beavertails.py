@@ -54,8 +54,8 @@ def main():
     for i in range(count):
         row = unsafe_data[i]
         formatted_data.append({
-            "instruction": row["prompt"],
-            "output": row["response"] 
+            "prompt": row["prompt"],
+            "completion": row["response"] 
         })
 
     # 6. Save

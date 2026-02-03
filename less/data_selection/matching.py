@@ -76,7 +76,7 @@ for target_task_name in args.target_task_names:
                 calculate_influence_score(
                     training_info=training_info, validation_info=validation_info)
         influence_score = influence_score.reshape(
-            influence_score.shape[0], N_SUBTASKS[target_task_name], -1).mean(-1).max(-1)[0]
+            influence_score.shape[0], N_SUBTASKS.get(target_task_name, 1), -1).mean(-1).max(-1)[0]
         output_dir = os.path.join(args.output_path, target_task_name)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
