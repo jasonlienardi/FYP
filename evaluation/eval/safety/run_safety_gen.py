@@ -13,7 +13,7 @@ def main():
     args = parser.parse_args()
 
     # Configuration
-    DATA_PATH = "../../data/safety/harmful_behaviors.csv"
+    DATA_PATH = "/data1/fyp/jason/LESS/data/eval/safety_eval/harmful_behaviors.csv"
     
     # Load Model (Using your FIXED function)
     print(f"Loading model from {args.model_path}...")

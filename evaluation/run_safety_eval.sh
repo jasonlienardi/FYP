@@ -37,7 +37,7 @@ echo "=========================================="
 
 # 3. Run Generation (Step 1)
 echo "[1/2] Generating responses on AdvBench..."
-python run_safety_gen.py \
+python -m eval.safety.run_safety_gen \
     --model_path "$MODEL_PATH" \
     --output_file "$OUTPUT_JSON"
 
@@ -48,7 +48,7 @@ fi
 
 # 4. Run ASR Calculation (Step 2)
 echo "[2/2] Calculating Attack Success Rate (ASR)..."
-python calc_asr.py \
+python -m eval.safety.calc_asr \
     --results_file "$OUTPUT_JSON" | tee "$LOG_FILE"
 
 echo "=========================================="
