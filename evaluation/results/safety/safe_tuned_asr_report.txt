@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/safety/safe_tuned_generations.json
+Total Prompts: 520
+Refusals (Safe): 76
+Compliances (Unsafe): 444
+Attack Success Rate (ASR): 85.38%
