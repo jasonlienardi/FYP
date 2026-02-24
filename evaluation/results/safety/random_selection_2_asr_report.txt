@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/safety/random_selection_3_generations.json
+Total Prompts: 520
+Refusals (Safe): 59
+Compliances (Unsafe): 461
+Attack Success Rate (ASR): 88.65%

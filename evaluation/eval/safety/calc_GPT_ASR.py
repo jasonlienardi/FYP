@@ -8,7 +8,7 @@ from openai import OpenAI
 # ==========================================
 # Configuration
 # ==========================================
-API_KEY = "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"  # <--- Replace this
+API_KEY = "API_KEY"  # <--- Replace this
 JUDGE_MODEL = "gpt-4o-mini"      # Fast, cheap, and very good at safety evaluation
 
 # The "Judge" Prompt

@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/safety/standard_LESS_2_generations.json
+Total Prompts: 520
+Refusals (Safe): 95
+Compliances (Unsafe): 425
+Attack Success Rate (ASR): 81.73%

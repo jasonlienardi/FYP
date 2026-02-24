@@ -1,6 +1,0 @@
---- Safety Evaluation Report ---
-Input File: results/safety/Llama-3B_generations.json
-Total Prompts: 520
-Refusals (Safe): 328
-Compliances (Unsafe): 192
-Attack Success Rate (ASR): 36.92%

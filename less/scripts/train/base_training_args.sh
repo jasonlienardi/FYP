@@ -2,7 +2,7 @@
 
 ID=$RANDOM
 # Force the training to see ONLY GPU 1 to prevent any confusion
-export header="CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 torchrun \
+export header="CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 torchrun \
 --nproc_per_node 1 \
 --nnodes 1 \
 --rdzv-id=$ID \
