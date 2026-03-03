@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/safety/nait_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 50
+Compliances (Unsafe): 470
+Attack Success Rate (ASR): 90.38%
