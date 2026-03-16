@@ -27,7 +27,7 @@ args = argparser.parse_args()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def load_and_normalize(path, device):
-    """Load gradients and normalize them to unit length"""
+    """Load gradients, sanitize Infs/NaNs, and normalize to unit length"""
     if os.path.isdir(path):
         path = os.path.join(path, "all_orig.pt")
     
@@ -36,8 +36,12 @@ def load_and_normalize(path, device):
         data = torch.tensor(data)
     
     data = data.float().to(device)
-    # L2 Normalize along the feature dimension (dim=1)
-    return F.normalize(data, p=2, dim=1)
+    
+    # 1. Sanitize FIRST to kill Infs before they break the norm calculation
+    data = torch.nan_to_num(data, nan=0.0, posinf=0.0, neginf=0.0)
+    
+    # 2. Normalize safely
+    return F.normalize(data, p=2, dim=1, eps=1e-8)
 
 def calculate_contrastive_score(training_info, toxic_info, safe_info, lambda_val=1.0):
     """
@@ -81,7 +85,10 @@ for train_file_name in args.train_file_names:
              curr_train_path = os.path.join(curr_train_path, "all_orig.pt")
         
         train_grads = torch.load(curr_train_path, map_location=device).float()
-        train_grads = F.normalize(train_grads, p=2, dim=1)
+        
+        # Sanitize and normalize the training gradients
+        train_grads = torch.nan_to_num(train_grads, nan=0.0, posinf=0.0, neginf=0.0)
+        train_grads = F.normalize(train_grads, p=2, dim=1, eps=1e-8)
 
         score = calculate_contrastive_score(train_grads, toxic_grads, safe_grads, args.lambda_val)
         total_score += args.checkpoint_weights[i] * score

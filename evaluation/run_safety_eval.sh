@@ -19,7 +19,7 @@ fi
 
 # 2. Configuration
 # Force use of GPU 0 to avoid device mismatch errors
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=1
 # Ensure Python can find the 'open-instruct' module (Crucial for your setup)
 export PYTHONPATH=$PYTHONPATH:/home/jason/LESS/open-instruct
 
