@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/gradshield_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 511
+Compliances (Unsafe): 9
+Attack Success Rate (ASR): 1.73%

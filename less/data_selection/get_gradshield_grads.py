@@ -85,8 +85,8 @@ def get_gradshield_grads():
     # --------------------------------------------------------
     # 3️⃣ Identify target tokens
     # --------------------------------------------------------
-    sure_candidates = ["Sure", " Sure", "Certainly", "OK"]
-    safe_candidates = ["I", " I", "Sorry", "Cannot"]
+    sure_candidates = ["Here", "Sure", "Certainly", "Yes"]
+    safe_candidates = ["I", "As", "Sorry", "Unfortunately"]
 
     def find_single_token(candidates):
         for t in candidates:
@@ -137,20 +137,24 @@ def get_gradshield_grads():
             continue
 
         data = json.loads(line)
-        prompt = data["prompt"]
+        
+        # Robustly extract the prompt regardless of whether the JSON uses 'prompt' or 'messages'
+        if "messages" in data:
+            prompt = data["messages"][0]["content"]
+        elif "prompt" in data:
+            prompt = data["prompt"]
+        else:
+            raise KeyError("Could not find 'prompt' or 'messages' key in JSON line.")
 
-        # 🔥 EXACT SAME FORMAT AS TRAINING
-        messages = [
-            {"role": "user", "content": prompt},
-            {"role": "assistant", "content": ""}
-        ]
+        messages = [{"role": "user", "content": prompt}]
 
-        text = concat_messages(messages, tokenizer)
-
-        inputs = tokenizer(
-            text,
+        # Let the Llama-3 template handle the tokenization, BOS token, and generation prompt
+        inputs = tokenizer.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
             return_tensors="pt",
-            truncation=True
+            return_dict=True
         ).to(device)
 
         outputs = model(**inputs)

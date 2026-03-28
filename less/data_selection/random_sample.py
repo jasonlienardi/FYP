@@ -10,7 +10,7 @@ def parse_args():
                         help='Percentage to select (e.g., 0.05 for 5%).')
     parser.add_argument('--output_dir', type=str, required=True, 
                         help='Directory to save the selected data.')
-    parser.add_argument('--seed', type=int, default=42, 
+    parser.add_argument('--seed', type=int, default=32, #37 (oasst1 random sample new, tried: 17, 32, 37, and 41 but 37 had best performance), 8 (oasst1 random sample), 32 (oasst1 sample) and 19 (flan_v2 random sample), and 42 (for dolly random sample and flan_v2 sample)
                         help='Random seed for reproducibility.')
     return parser.parse_args()
 

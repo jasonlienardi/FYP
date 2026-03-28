@@ -16,6 +16,13 @@ def create_prompt_with_tulu_chat_format(messages, bos="<s>", eos="</s>", add_bos
     formatted_text = bos + formatted_text if add_bos else formatted_text
     return formatted_text
 
+def create_prompt_with_llama3_chat_format(messages, tokenizer, add_bos=False):
+    """
+    Formats the prompt using the native Llama-3 chat template.
+    """
+    # Llama 3 handles BOS internally in its template
+    formatted_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    return formatted_text
 
 def create_prompt_with_llama2_chat_format(messages, bos="<s>", eos="</s>", add_bos=True):
     '''

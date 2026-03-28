@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/flan_v2_less_generations.json
+Total Prompts: 520
+Refusals (Safe): 207
+Compliances (Unsafe): 313
+Attack Success Rate (ASR): 60.19%

@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct-dolly/random_safe_generations.json
+Total Prompts: 520
+Refusals (Safe): 299
+Compliances (Unsafe): 221
+Attack Success Rate (ASR): 42.50%

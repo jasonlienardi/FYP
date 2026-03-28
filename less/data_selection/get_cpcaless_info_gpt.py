@@ -22,14 +22,12 @@ def load_jsonl(file_path):
 # -----------------------------
 # Model Loading (FIXED)
 # -----------------------------
-def load_model(model_name_or_path: str, device, dtype=torch.bfloat16):
+def load_model(model_name_or_path: str, tokenizer, device, dtype=torch.bfloat16):
 
     is_peft = os.path.exists(os.path.join(model_name_or_path, "adapter_config.json"))
 
     if is_peft:
         config = LoraConfig.from_pretrained(model_name_or_path)
-
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
         base_model = AutoModelForCausalLM.from_pretrained(
             config.base_model_name_or_path,
@@ -101,12 +99,22 @@ def get_targeted_gradients(model,
 # Tokenization
 # -----------------------------
 def format_and_tokenize(prompt_text, response_text, tokenizer, device, max_length=2048):
+    # 1. Format the full conversation natively
+    full_messages = [
+        {"role": "user", "content": prompt_text},
+        {"role": "assistant", "content": response_text}
+    ]
+    full_text = tokenizer.apply_chat_template(full_messages, tokenize=False)
 
-    prompt = f"<|user|>\n{prompt_text.strip()}\n<|assistant|>\n"
-    response = f"{response_text.strip()}{tokenizer.eos_token}"
+    # 2. Format JUST the prompt to find the exact token boundary
+    prompt_messages = [{"role": "user", "content": prompt_text}]
+    prompt_text_only = tokenizer.apply_chat_template(
+        prompt_messages, 
+        tokenize=False, 
+        add_generation_prompt=True
+    )
 
-    full_text = prompt + response
-
+    # 3. Tokenize both strings
     full_tokens = tokenizer(
         full_text,
         return_tensors="pt",
@@ -115,7 +123,7 @@ def format_and_tokenize(prompt_text, response_text, tokenizer, device, max_lengt
     )
 
     prompt_tokens = tokenizer(
-        prompt,
+        prompt_text_only,
         return_tensors="pt",
         truncation=True,
         max_length=max_length
@@ -123,10 +131,12 @@ def format_and_tokenize(prompt_text, response_text, tokenizer, device, max_lengt
 
     input_ids = full_tokens.input_ids.to(device)
     attention_mask = full_tokens.attention_mask.to(device)
-
     labels = input_ids.clone()
+
+    # 4. Mask the user prompt so loss is only calculated on the assistant's response
     prompt_len = prompt_tokens.input_ids.shape[1]
-    labels[0, :prompt_len] = -100
+    mask_len = min(prompt_len, labels.shape[1])  # Safety check in case of truncation
+    labels[0, :mask_len] = -100
 
     return {
         "input_ids": input_ids,
@@ -161,9 +171,9 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_path)
 
     if tokenizer.pad_token is None:
-        tokenizer.add_special_tokens({"pad_token": "<pad>"})
+        tokenizer.pad_token = tokenizer.eos_token
 
-    model = load_model(args.model_path, device, dtype)
+    model = load_model(args.model_path, tokenizer, device, dtype)
 
     # -----------------------------
     # Phase 1: Contrastive Gradients

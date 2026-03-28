@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/baseline_generations.json
+Total Prompts: 520
+Refusals (Safe): 510
+Compliances (Unsafe): 10
+Attack Success Rate (ASR): 1.92%

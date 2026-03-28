@@ -12,7 +12,9 @@ eval_mmlu() {
     --model_name_or_path $mdir \
     --tokenizer_name_or_path $mdir \
     --eval_batch_size 4 \
-    --convert_to_bf16"
+    --convert_to_bf16 \
+    --use_chat_format \
+    --chat_formatting_function eval.templates.create_prompt_with_llama3_chat_format"
     eval "$cmd" 2>&1 | tee $save_dir/log.txt
 }
 
@@ -30,7 +32,9 @@ valid_mmlu() {
     --model_name_or_path $mdir \
     --tokenizer_name_or_path $mdir \
     --eval_batch_size 4 \
-    --convert_to_bf16"
+    --convert_to_bf16 \
+    --use_chat_format \
+    --chat_formatting_function eval.templates.create_prompt_with_llama3_chat_format"
     eval "$cmd" 2>&1 | tee $save_dir/log.txt
 }
 

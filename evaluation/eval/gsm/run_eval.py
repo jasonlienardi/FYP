@@ -6,6 +6,7 @@ import random
 import torch
 import vllm
 import evaluate
+import inspect
 from eval.utils import (
     generate_completions,
     load_hf_lm_and_tokenizer,
@@ -13,6 +14,7 @@ from eval.utils import (
     dynamic_import_function,
 )
 from eval.gsm.examplars import EXAMPLARS as GSM_EXAMPLARS
+from transformers import AutoTokenizer
 
 
 exact_match = evaluate.load("exact_match")
@@ -63,11 +65,24 @@ def main(args):
 
     prompts = []
     chat_formatting_function = dynamic_import_function(args.chat_formatting_function) if args.use_chat_format else None
+    
+    # NEW: Load the tokenizer early specifically for the formatting function
+    format_tokenizer = None
+    if args.use_chat_format and args.model_name_or_path:
+        tok_path = args.tokenizer_name_or_path if args.tokenizer_name_or_path else args.model_name_or_path
+        format_tokenizer = AutoTokenizer.from_pretrained(tok_path)
+
     for example in test_data:
         prompt = prompt_prefix + "Question: " + example["question"].strip()
         if args.use_chat_format:
             messages = [{"role": "user", "content": prompt}]
-            prompt = chat_formatting_function(messages, add_bos=False)
+            
+            # NEW: Dynamically pass the tokenizer if the function requires it
+            if "tokenizer" in inspect.signature(chat_formatting_function).parameters:
+                prompt = chat_formatting_function(messages, tokenizer=format_tokenizer, add_bos=False)
+            else:
+                prompt = chat_formatting_function(messages, add_bos=False)
+                
             if prompt[-1] in ["\n", " "]:
                 prompt += "Answer:"
             else:

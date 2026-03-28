@@ -125,43 +125,47 @@ def encode_with_prompt_completion_format(example, tokenizer, max_seq_length):
 
 def encode_with_messages_format(example, tokenizer, max_seq_length):
     '''
-    Original implementation of the function: https://github.com/allenai/open-instruct/blob/9ebcb582cfc243a6dab75b4302fa432784db26c2/open_instruct/finetune.py#L264C1-L322C1
-
-    Here we assume each example has a 'messages' field Each message is a dict with 'role' and 'content' fields.
-    We concatenate all messages with the roles as delimiters and tokenize them together.
+    Formats messages using the model's native chat template and masks user prompts.
     '''
     messages = example['messages']
     if len(messages) == 0:
         raise ValueError('messages field is empty.')
 
-    example_text = concat_messages(messages, tokenizer)
+    # 1. Format the entire conversation natively
+    example_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+    
     tokenized_example = tokenizer(
         example_text, return_tensors='pt', max_length=max_seq_length, truncation=True)
+    
     input_ids = tokenized_example.input_ids
     labels = input_ids.clone()
 
-    # mask the non-assistant part for avoiding loss
+    # 2. Mask the non-assistant parts (User Prompts and System Prompts)
     for message_idx, message in enumerate(messages):
         if message["role"] != "assistant":
+            # Start index of the current message
             if message_idx == 0:
                 message_start_idx = 0
             else:
-                message_start_idx = tokenizer(
-                    concat_messages(messages[:message_idx], tokenizer), return_tensors='pt', max_length=max_seq_length, truncation=True
-                ).input_ids.shape[1]
+                # Format the conversation up to this message
+                past_messages = tokenizer.apply_chat_template(messages[:message_idx], tokenize=False, add_generation_prompt=False)
+                message_start_idx = tokenizer(past_messages, return_tensors='pt', max_length=max_seq_length, truncation=True).input_ids.shape[1]
+            
+            # End index of the current message (includes this message + preceding)
             if message_idx < len(messages) - 1 and messages[message_idx+1]["role"] == "assistant":
-                # here we also ignore the role of the assistant
-                messages_so_far = concat_messages(
-                    messages[:message_idx+1], tokenizer) + "<|assistant|>\n"
+                # If the next message is the assistant, format up to the generation prompt
+                messages_so_far = tokenizer.apply_chat_template(messages[:message_idx+1], tokenize=False, add_generation_prompt=True)
             else:
-                messages_so_far = concat_messages(
-                    messages[:message_idx+1], tokenizer)
+                messages_so_far = tokenizer.apply_chat_template(messages[:message_idx+1], tokenize=False, add_generation_prompt=False)
+                
             message_end_idx = tokenizer(
                 messages_so_far,
                 return_tensors='pt',
                 max_length=max_seq_length,
                 truncation=True
             ).input_ids.shape[1]
+            
+            # Mask out the user/system tokens so the model doesn't learn to predict them
             labels[:, message_start_idx:message_end_idx] = -100
 
             if message_end_idx >= max_seq_length:
@@ -173,21 +177,6 @@ def encode_with_messages_format(example, tokenizer, max_seq_length):
         'labels': labels.flatten(),
         'attention_mask': attention_mask.flatten(),
     }
-
-
-def concat_messages(messages, tokenizer):
-    message_text = ""
-    for message in messages:
-        if message["role"] == "system":
-            message_text += "<|system|>\n" + message["content"].strip() + "\n"
-        elif message["role"] == "user":
-            message_text += "<|user|>\n" + message["content"].strip() + "\n"
-        elif message["role"] == "assistant":
-            message_text += "<|assistant|>\n" + \
-                message["content"].strip() + tokenizer.eos_token + "\n"
-        else:
-            raise ValueError("Invalid role: {}".format(message["role"]))
-    return message_text
 
 
 def encode_with_messages_format_with_llama2_chat(example, tokenizer, max_seq_length):

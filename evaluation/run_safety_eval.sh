@@ -23,7 +23,7 @@ export CUDA_VISIBLE_DEVICES=1
 # Ensure Python can find the 'open-instruct' module (Crucial for your setup)
 export PYTHONPATH=$PYTHONPATH:/home/jason/LESS/open-instruct
 
-RESULTS_DIR="results/safety"
+RESULTS_DIR="results/Instruct-oasst1"
 OUTPUT_JSON="${RESULTS_DIR}/${OUTPUT_NAME}_generations.json"
 LOG_FILE="${RESULTS_DIR}/${OUTPUT_NAME}_asr_report.txt"
 

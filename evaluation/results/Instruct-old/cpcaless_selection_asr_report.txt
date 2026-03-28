@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/cpcaless_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 372
+Compliances (Unsafe): 148
+Attack Success Rate (ASR): 28.46%

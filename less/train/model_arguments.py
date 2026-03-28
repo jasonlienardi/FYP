@@ -73,6 +73,6 @@ class ModelArguments:
 
 
 def add_padding_to_tokenizer(tokenizer):
-    """ add the padding tokens in the tokenizer """
+    """ Assign the padding token to the EOS token for Llama-3 compatibility """
     if tokenizer.pad_token is None:
-        tokenizer.add_special_tokens({"pad_token": "<pad>"})
+        tokenizer.pad_token = tokenizer.eos_token   

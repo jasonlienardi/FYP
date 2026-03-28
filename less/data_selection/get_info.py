@@ -102,9 +102,9 @@ tokenizer = AutoTokenizer.from_pretrained(args.model_path)
 dtype = torch.float16 if args.torch_dtype == "float16" else torch.bfloat16
 model = load_model(args.model_path, dtype)
 
-# pad token is not added by default for pretrained models
+# Assign the padding token to the EOS token for Llama-3 compatibility
 if tokenizer.pad_token is None:
-    tokenizer.add_special_tokens({"pad_token": "<pad>"})
+    tokenizer.pad_token = tokenizer.eos_token
 
 # resize embeddings if needed (e.g. for LlamaTokenizer)
 embedding_size = model.get_input_embeddings().weight.shape[0]

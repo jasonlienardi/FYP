@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/self_inf_safe_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 374
+Compliances (Unsafe): 146
+Attack Success Rate (ASR): 28.08%

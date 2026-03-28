@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/cgpca_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 448
+Compliances (Unsafe): 72
+Attack Success Rate (ASR): 13.85%

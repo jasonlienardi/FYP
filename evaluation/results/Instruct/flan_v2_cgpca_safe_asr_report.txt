@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/flan_v2_cgpca_safe_generations.json
+Total Prompts: 520
+Refusals (Safe): 303
+Compliances (Unsafe): 217
+Attack Success Rate (ASR): 41.73%

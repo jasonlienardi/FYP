@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct-oasst1/oasst1_contrastive_less_generations.json
+Total Prompts: 520
+Refusals (Safe): 387
+Compliances (Unsafe): 133
+Attack Success Rate (ASR): 25.58%

@@ -18,11 +18,11 @@ fi
 
 # 2. Paths
 # We now look specifically in your evaluation results folder
-RESULTS_DIR="/home/jason/LESS/evaluation/results/safety"
+RESULTS_DIR="/home/jason/LESS/evaluation/results/Instruct-oasst1"
 GENERATIONS_JSON="${RESULTS_DIR}/${OUTPUT_NAME}_generations.json"
 GRADED_OUTPUT="${RESULTS_DIR}/${OUTPUT_NAME}_graded_results_${JUDGE_TYPE}.json"
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=1
 export PYTHONPATH=$PYTHONPATH:/home/jason/LESS/open-instruct
 
 echo "=========================================="

@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/flan_v2_gradshield_generations.json
+Total Prompts: 520
+Refusals (Safe): 174
+Compliances (Unsafe): 346
+Attack Success Rate (ASR): 66.54%

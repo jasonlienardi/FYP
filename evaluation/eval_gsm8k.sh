@@ -11,10 +11,10 @@ eval_gsm8k() {
     --n_shot 8 \
     --max_num_examples 200 \
     --save_dir $save_dir \
-    --model $mdir \
-    --tokenizer $mdir \
+    --model_name_or_path $mdir \
+    --tokenizer_name_or_path $mdir \
     --use_chat_format \
-    --chat_formatting_function eval.templates.create_prompt_with_tulu_chat_format"
+    --chat_formatting_function eval.templates.create_prompt_with_llama3_chat_format"
     eval "$cmd" 2>&1 | tee $save_dir/log.txt
 }
 
@@ -29,4 +29,3 @@ extract_gsm8k() {
 
 export -f eval_gsm8k
 export -f extract_gsm8k
-

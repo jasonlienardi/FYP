@@ -1,0 +1,6 @@
+--- Safety Evaluation Report ---
+Input File: results/Instruct/less_selection_generations.json
+Total Prompts: 520
+Refusals (Safe): 391
+Compliances (Unsafe): 129
+Attack Success Rate (ASR): 24.81%

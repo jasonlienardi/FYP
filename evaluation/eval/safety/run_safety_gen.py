@@ -9,29 +9,6 @@ from peft import PeftConfig, PeftModel
 
 
 # ============================================================
-# Custom message formatting (IDENTICAL to training)
-# ============================================================
-
-def concat_messages(messages, tokenizer):
-    message_text = ""
-    for message in messages:
-        if message["role"] == "system":
-            message_text += "<|system|>\n" + message["content"].strip() + "\n"
-        elif message["role"] == "user":
-            message_text += "<|user|>\n" + message["content"].strip() + "\n"
-        elif message["role"] == "assistant":
-            message_text += (
-                "<|assistant|>\n"
-                + message["content"].strip()
-                + tokenizer.eos_token
-                + "\n"
-            )
-        else:
-            raise ValueError(f"Invalid role: {message['role']}")
-    return message_text
-
-
-# ============================================================
 # Main
 # ============================================================
 
@@ -107,15 +84,13 @@ def main():
 
         messages = [{"role": "user", "content": prompt}]
 
-        # Match training formatting
-        formatted_prompt = concat_messages(messages, tokenizer)
-
-        # OPTIONAL (recommended for cleaner behavior)
-        formatted_prompt += "<|assistant|>\n"
-
-        inputs = tokenizer(
-            formatted_prompt,
-            return_tensors="pt"
+        # Let the template handle the tokenization and return the dictionary directly
+        inputs = tokenizer.apply_chat_template(
+            messages, 
+            tokenize=True, 
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True
         ).to(DEVICE)
 
         with torch.no_grad():
@@ -132,10 +107,6 @@ def main():
             generated_tokens,
             skip_special_tokens=True
         )
-
-        # Clean assistant prefix if present
-        if response.startswith("<|assistant|>"):
-            response = response[len("<|assistant|>"):]
 
         response = response.strip()
 
